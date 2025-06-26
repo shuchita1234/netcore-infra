@@ -1,13 +1,13 @@
 variable "resource_group_name" {
   description = "Name of the resource group"
   type        = string
-  default     = "Wisdom-Pet-Medicine"
+  default     = "Wisdom-Pet-Medicine14"
 }
 
 variable "location" {
   description = "Azure region where resources will be created"
   type        = string
-  default     = "West Europe"
+  default     = "Central US"
 }
 
 variable "app_service_plan_name" {
