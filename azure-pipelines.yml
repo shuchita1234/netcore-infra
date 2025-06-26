@@ -1,91 +1,46 @@
-trigger: none
+trigger:
+- main
 
 pool:
-  vmImage: ubuntu-latest
+  vmImage: 'ubuntu-latest'
 
 variables:
-  backendService: 'azure-terraform'  # Azure RM service connection name
-  backendResourceGroup: 'rg-terraform'
+  backendService: 'azure-terraform'          # Azure service connection name
+  backendResourceGroup: 'WisdomPetMedicine-RG'
   backendStorageAccount: 'storageaccount30808'
-  backendContainer: 'netcoreapp'  # Ensure this container exists
+  backendContainer: 'netcoreapp'
   backendKey: 'dev.tfstate'
   workingDir: '$(System.DefaultWorkingDirectory)'
 
 stages:
-- stage: Init
+- stage: Terraform
   jobs:
   - job: TerraformInit
+    displayName: 'Terraform Init and Plan'
     steps:
-    - checkout: self
-
-    - script: |
-        echo "Working dir: $(workingDir)"
-        ls -al $(workingDir)
-      displayName: 'List files in working directory'
 
     - task: TerraformInstaller@1
-      displayName: 'Install Terraform CLI'
+      displayName: 'Install Terraform'
       inputs:
-        terraformVersion: '1.6.6'
+        terraformVersion: 'latest'
+
+    - checkout: self
 
     - task: TerraformTaskV4@4
       displayName: 'Terraform Init'
       inputs:
         provider: 'azurerm'
         command: 'init'
+        workingDirectory: '$(workingDir)'
         backendServiceArm: '$(backendService)'
         backendAzureRmResourceGroupName: '$(backendResourceGroup)'
         backendAzureRmStorageAccountName: '$(backendStorageAccount)'
         backendAzureRmContainerName: '$(backendContainer)'
         backendAzureRmKey: '$(backendKey)'
-        workingDirectory: '$(workingDir)'
-
-    - task: TerraformTaskV4@4
-      displayName: 'Terraform Validate'
-      inputs:
-        provider: 'azurerm'
-        command: 'validate'
-        workingDirectory: '$(workingDir)'
-
-- stage: Plan
-  displayName: 'Terraform Plan'
-  dependsOn: Init
-  jobs:
-  - job: TerraformPlan
-    steps:
-    - checkout: self
-
-    - task: TerraformInstaller@1
-      displayName: 'Install Terraform CLI'
-      inputs:
-        terraformVersion: '1.6.6'
-
-    - task: TerraformTaskV4@4
-      displayName: 'Terraform Init'
-      inputs:
-        provider: 'azurerm'
-        command: 'init'
-        backendServiceArm: '$(backendService)'
-        backendAzureRmResourceGroupName: '$(backendResourceGroup)'
-        backendAzureRmStorageAccountName: '$(backendStorageAccount)'
-        backendAzureRmContainerName: '$(backendContainer)'
-        backendAzureRmKey: '$(backendKey)'
-        workingDirectory: '$(workingDir)'
 
     - task: TerraformTaskV4@4
       displayName: 'Terraform Plan'
       inputs:
         provider: 'azurerm'
         command: 'plan'
-        environmentServiceNameAzureRM: '$(backendService)'
         workingDirectory: '$(workingDir)'
-
-    - task: TerraformTaskV4@4
-      displayName: 'Terraform Apply'
-      inputs:
-        provider: 'azurerm'
-        command: 'apply'
-        environmentServiceNameAzureRM: '$(backendService)'
-        commandOptions: '-auto-approve'
-        workingDirectory: '$(workingDir)'
-
