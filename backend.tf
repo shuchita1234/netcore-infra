@@ -2,7 +2,7 @@ terraform {
   backend "azurerm" {
     resource_group_name   = "WisdomPetMedicine-RG"
     storage_account_name  = "storageaccount30808"
-    container_name        = "marketing"
-    key                   = "terraform.tfstate"
+    container_name        = "netcoreapp"
+    key                   = "dev.tfstate"
   }
 }
